@@ -2,20 +2,25 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom';
 import Card from '@mui/material/Card';
-import Box from '@mui/material/Box';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
-import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
+
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+
 import HomeIcon from '@mui/icons-material/Home';
 
 import { IconButton } from '@mui/material';
+
 export default function History() {
 
 
     const { getHistoryOfUser } = useContext(AuthContext);
 
     const [meetings, setMeetings] = useState([])
+
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
 
 
     const routeTo = useNavigate();
@@ -25,13 +30,19 @@ export default function History() {
             try {
                 const history = await getHistoryOfUser();
                 setMeetings(history);
-            } catch {
-                // IMPLEMENT SNACKBAR
+            } catch (e){
+                setErrorMessage("Failed to fetch meeting history.");
+                setSnackbarOpen(true);    //SNACKBAR
             }
-        }
+        };
 
         fetchHistory();
-    }, [])
+    }, [getHistoryOfUser]);
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
+
 
     let formatDate = (dateString) => {
 
@@ -40,9 +51,9 @@ export default function History() {
         const month = (date.getMonth() + 1).toString().padStart(2, "0")
         const year = date.getFullYear();
 
-        return `${day}/${month}/${year}`
+        return `${day}/${month}/${year}`;
 
-    }
+    };
 
     return (
         <div>
@@ -82,6 +93,17 @@ export default function History() {
                 }) : <></>
 
             }
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="error" sx={{ width: '100%' }}>
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
 
         </div>
     )
